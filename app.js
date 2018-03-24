@@ -16,9 +16,9 @@ const app = express();
 const server = http.Server(app);
 
 app.get('/', (req, res) => {
-    res.sendFile(`${__dirname}/client/index.html`);
+    res.sendFile(`${__dirname}/dist/index.html`);
 });
-app.use('/client', express.static(`${__dirname}/client`));
+app.use('/dist', express.static(`${__dirname}/dist`));
 
 server.listen(3000);
 console.log('Server started.');
@@ -144,10 +144,10 @@ function onInputFired(data) {
     // Make a new pointer with the new inputs from the client.
     // contains player positions in server
     const serverPointer = {
-        x: data.pointer_x,
-        y: data.pointer_y,
-        worldX: data.pointer_worldx,
-        worldY: data.pointer_worldy,
+        x: data.pointerX,
+        y: data.pointerY,
+        worldX: data.pointerWorldX,
+        worldY: data.pointerWorldY,
     };
 
     // moving the player to the new inputs from the player
