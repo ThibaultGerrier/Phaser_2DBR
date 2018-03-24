@@ -8,6 +8,9 @@ const uuidv1 = require('uuid/v1');
 const socketIo = require('socket.io');
 
 const physicsPlayer = require('./server/physics/playermovement.js');
+const Player = require('./server/Player');
+const GameSetup = require('./server/GameSetup');
+const FoodPickup = require('./server/FoodPickup');
 
 const app = express();
 const server = http.Server(app);
@@ -20,111 +23,59 @@ app.use('/client', express.static(`${__dirname}/client`));
 server.listen(3000);
 console.log('Server started.');
 
-const playerList = [];
+const io = socketIo(server, {});
 
-// needed for physics update
-// const startTime = (new Date()).getTime();
-// let lastTime;
-const timeStep = 1 / 70;
-
-// the physics world in the server. This is where all the physics happens.
-// we set gravity to 0 since we are just following mouse pointers.
-const world = new p2.World({
-    gravity: [0, 0],
+io.sockets.on('connection', (socket) => {
+    console.log('socket connected');
+    socket.on('enter_name', onEnterName);
+    socket.on('logged_in', loggedIn);
+    socket.on('disconnect', onClientDisconnect);
+    socket.on('new_player', onNewPlayer);
+    socket.on('input_fired', onInputFired);
+    socket.on('player_collision', onPlayerCollision);
+    socket.on('item_picked', onItemPicked);
 });
 
-// create a game class to store basic game data
-const GameSetup = function () {
-    // The constant number of foods in the game
-    this.food_num = 100;
-    // food object list
-    this.food_pickup = [];
-    // game size height
-    this.canvas_height = 4000;
-    // game size width
-    this.canvas_width = 4000;
-};
-
-// createa a new game instance
 const gameInstance = new GameSetup();
+const world = new p2.World({ gravity: [0, 0] });
 
+const findPlayerById = id => gameInstance.playerList.find(p => p.id === id) || false;
+const findFood = id => gameInstance.foodPickup.find(f => f.id === id) || false;
 
-// a player class in the server
-const Player = function (startX, startY, startAngle) {
-    // this.id;
-    this.x = startX;
-    this.y = startY;
-    this.angle = startAngle;
-    this.speed = 500;
-    // We need to intilaize with true.
-    this.sendData = true;
-    this.size = getRndInteger(40, 100);
-    this.dead = false;
-};
-
-const FoodPickup = function (maxX, maxY, type, id) {
-    this.x = getRndInteger(10, maxX - 10);
-    this.y = getRndInteger(10, maxY - 10);
-    this.type = type;
-    this.id = id;
-    // this.powerup;
-};
-
-// We call physics handler 60fps. The physics is calculated here.
 setInterval(heartbeat, 1000 / 60);
 
-
-// Steps the physics world.
-function physicsHanlder() {
-    // const currentTime = (new Date()).getTime();
-    // const timeElapsed = currentTime - startTime;
-    // let dt = lastTime ? (timeElapsed - lastTime) / 1000 : 0;
-    // dt = Math.min(1 / 10, dt);
-    world.step(timeStep);
-}
-
-function heartbeat() {
-    // the number of food that needs to be generated
-    // in this demo, we keep the food always at 100
-    const foodGenerateNum = gameInstance.food_num - gameInstance.food_pickup.length;
-
-    // add the food
-    addFood(foodGenerateNum);
-    // physics stepping. We moved this into heartbeat
-    physicsHanlder();
+function physicsHandler() {
+    world.step(1 / 70);
 }
 
 function addFood(n) {
-    // return if it is not required to create food
     if (n <= 0) {
         return;
     }
-    // create n number of foods to the game
     for (let i = 0; i < n; i += 1) {
-        // create the unique id using node-uuid
         const uniqueId = uuidv1();
-        const foodEntity = new FoodPickup(gameInstance.canvas_width, gameInstance.canvas_height, 'food', uniqueId);
-        gameInstance.food_pickup.push(foodEntity);
-        // set the food data back to client
+        const foodEntity = new FoodPickup(gameInstance.canvasWidth, gameInstance.canvasHeight, 'food', uniqueId);
+        gameInstance.foodPickup.push(foodEntity);
         io.emit('item_update', foodEntity);
     }
 }
 
-// when the player enters their name, trigger this function
-function onEntername(data) {
+function heartbeat() {
+    const foodGenerateNum = gameInstance.foodNum - gameInstance.foodPickup.length;
+    addFood(foodGenerateNum);
+    physicsHandler();
+}
+
+function loggedIn(data) {
+    this.emit('enter_game', { username: data.username });
+}
+
+function onEnterName(data) {
     this.emit('join_game', { username: data.username, id: this.id });
 }
 
-
-// when a new player connects, we make a new instance of the player object,
-// and send a new player message to the client.
 function onNewPlayer(data) {
-    // new player instance
-    const newPlayer = new Player(data.x, data.y, data.angle);
-    newPlayer.id = this.id;
-    newPlayer.username = data.username;
-
-    // add the playerbody into the player object
+    const newPlayer = new Player(this.id, data.username, data.x, data.y, data.angle);
     newPlayer.playerBody = new p2.Body({
         mass: 0,
         position: [0, 0],
@@ -147,7 +98,7 @@ function onNewPlayer(data) {
     };
 
     // send to the new player about everyone who is already connected.
-    playerList.forEach((player) => {
+    gameInstance.playerList.forEach((player) => {
         const playerInfo = {
             id: player.id,
             username: player.username,
@@ -162,18 +113,17 @@ function onNewPlayer(data) {
     });
 
     // Tell the client to make foods that are existing
-    gameInstance.food_pickup.forEach((food) => {
+    gameInstance.foodPickup.forEach((food) => {
         this.emit('item_update', food);
     });
 
     // send message to every connected client except the sender
     this.broadcast.emit('new_enemyPlayer', currentInfo);
 
-    playerList.push(newPlayer);
+    gameInstance.playerList.push(newPlayer);
     sortPlayerListByScore();
 }
 
-// instead of listening to player positions, we listen to user inputs
 function onInputFired(data) {
     const movePlayer = findPlayerById(this.id, this.room);
     if (!movePlayer || movePlayer.dead) {
@@ -264,17 +214,12 @@ function onPlayerCollision(data) {
     console.log('someone ate someone!!!');
 }
 
-const findFood = id => gameInstance.food_pickup.find(f => f.id === id) || false;
-
 function sortPlayerListByScore() {
-    playerList.sort((a, b) => b.size - a.size);
-
+    gameInstance.playerList.sort((a, b) => b.size - a.size);
     const playerListSorted = [];
-
-    playerList.forEach((player) => {
+    gameInstance.playerList.forEach((player) => {
         playerListSorted.push({ id: player.id, username: player.username, size: player.size });
     });
-
     io.emit('leader_board', playerListSorted);
 }
 
@@ -290,7 +235,7 @@ function onItemPicked(data) {
     movePlayer.size += 3;
     // broadcast the new size
     this.emit('gained', { new_size: movePlayer.size });
-    gameInstance.food_pickup.splice(gameInstance.food_pickup.indexOf(object), 1);
+    gameInstance.foodPickup.splice(gameInstance.foodPickup.indexOf(object), 1);
     sortPlayerListByScore();
     console.log('item picked');
     io.emit('itemremove', object);
@@ -301,49 +246,19 @@ function playerKilled(player) {
     // find the player and remove it.
     const removePlayer = findPlayerById(player.id);
     if (removePlayer) {
-        playerList.splice(playerList.indexOf(removePlayer), 1);
+        gameInstance.playerList.splice(gameInstance.playerList.indexOf(removePlayer), 1);
     }
     player.dead = true;
 }
 
-function getRndInteger(min, max) {
-    return Math.floor(Math.random() * ((max - min) + 1)) + min;
-}
-
-// call when a client disconnects and tell the clients except sender to remove the disconnected player
 function onClientDisconnect() {
     console.log('disconnect');
     const removePlayer = findPlayerById(this.id);
     if (removePlayer) {
-        playerList.splice(playerList.indexOf(removePlayer), 1);
+        gameInstance.playerList.splice(gameInstance.playerList.indexOf(removePlayer), 1);
     }
     console.log(`removing player ${this.id}`);
     sortPlayerListByScore();
     // send message to every connected client except the sender
     this.broadcast.emit('remove_player', { id: this.id });
 }
-
-// find player by the the unique socket id
-const findPlayerById = id => playerList.find(p => p.id === id) || false;
-
-// io connection
-const io = socketIo(server, {});
-
-io.sockets.on('connection', (socket) => {
-    console.log('socket connected');
-    // when the player enters their name
-    socket.on('enter_name', onEntername);
-    // whent he player logs in
-    socket.on('logged_in', function (data) {
-        this.emit('enter_game', { username: data.username });
-    });
-    // listen for disconnection;
-    socket.on('disconnect', onClientDisconnect);
-    // listen for new player
-    socket.on('new_player', onNewPlayer);
-    // listen for new player inputs.
-    socket.on('input_fired', onInputFired);
-    socket.on('player_collision', onPlayerCollision);
-    // listen if player got items
-    socket.on('item_picked', onItemPicked);
-});
