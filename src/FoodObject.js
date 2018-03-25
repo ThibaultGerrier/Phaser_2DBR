@@ -1,4 +1,4 @@
-import { game } from './main';
+import Global from './Globals';
 
 class FoodObject {
     constructor(id, type, startX, startY) {
@@ -12,7 +12,7 @@ class FoodObject {
         // this.powerup = value;
 
         // create a circulr phaser object for food
-        this.item = game.add.graphics(this.posX, this.posY);
+        this.item = Global.game.add.graphics(this.posX, this.posY);
         this.item.beginFill(0xFF0000);
         this.item.lineStyle(2, 0xFF0000, 1);
         this.item.drawCircle(0, 0, 20);
@@ -20,7 +20,7 @@ class FoodObject {
         this.item.type = 'food_body';
         this.item.id = id;
 
-        game.physics.p2.enableBody(this.item, true);
+        Global.game.physics.p2.enableBody(this.item, true);
         this.item.body.clearShapes();
         this.item.body_size = 10;
         this.item.body.addCircle(this.item.body_size, 0, 0);

@@ -1,9 +1,12 @@
+/* global io */
+
 import React from 'react';
-import { Button, FormControl, Grid } from 'react-bootstrap';
+import { Button, Col, FormControl, Grid, Jumbotron, Row } from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 export default class App extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             gameRunning: false,
             username: '',
@@ -12,15 +15,15 @@ export default class App extends React.Component {
 
     play() {
         this.setState({ gameRunning: true });
-        const { username } = this.state;
-        console.log(username);
+        this.props.playClick(this.state.username);
     }
 
     render() {
-        return (
-            <div>
-                {!this.state.gameRunning &&
-                    <Grid className="center-container">
+        return !this.state.gameRunning ?
+            (<Jumbotron className="text-center" style={{ backgroundColor: '#fff' }}>
+                <Row>
+                    <Col lg={4}/>
+                    <Col className="center-block" lg={4}>
                         <h1>Welcome to 2DBR</h1>
                         <br/>
                         <FormControl
@@ -29,13 +32,18 @@ export default class App extends React.Component {
                             placeholder="Username"
                             value={this.state.username}
                             onChange={e => this.setState({ username: e.target.value })}
-                            style={{ width: '50%' }}>
+                            style={{ width: '100%' }}>
                         </FormControl>
                         <br/>
                         <Button bsStyle="success" onClick={() => this.play()}>Play!</Button>
-                    </Grid>
-                }
-            </div>
-        );
+                    </Col>
+                    <Col lg={4}/>
+                </Row>
+            </Jumbotron>)
+            : <div/>;
     }
 }
+
+App.propTypes = {
+    playClick: PropTypes.func,
+};

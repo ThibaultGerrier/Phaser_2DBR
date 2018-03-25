@@ -6,13 +6,13 @@
 // import Phaser from './lib/phaser';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
-import playerCollide from './colide';
-import { moveToPointer, distanceToPointer } from './player';
-import Item from './item';
+import App from '../src/App';
+import playerCollide from '../src/colide';
+import { moveToPointer, distanceToPointer } from '../src/player';
+import Item from '../src/item';
 import { socket, login } from './login';
 
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(<App />, document.getElementById('react-root'));
 
 
 let player;
@@ -21,7 +21,7 @@ let leaderText;
 const canvasWidth = window.innerWidth * window.devicePixelRatio;
 const canvasHeight = window.innerHeight * window.devicePixelRatio;
 
-const game = new Phaser.Game(canvasWidth, canvasHeight, Phaser.CANVAS, 'gameDiv');
+const game = new Phaser.Game(canvasWidth, canvasHeight, Phaser.CANVAS, 'game-root');
 
 // the enemy player list
 const enemies = [];
@@ -268,74 +268,7 @@ function lbupdate(data) {
 const item = new Item(game);
 
 main.prototype = {
-    init(username) {
-        // when the socket connects, call the onsocketconnected and send its information to the server
-        socket.emit('logged_in', { username });
 
-        // when the player enters the game
-        socket.on('enter_game', onsocketConnected);
-    },
-
-    preload() {
-        game.stage.disableVisibilityChange = true;
-        game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
-        game.world.setBounds(0, 0, gameProperties.gameWidth, gameProperties.gameHeight, false, false, false, false);
-        game.physics.startSystem(Phaser.Physics.P2JS);
-        game.physics.p2.setBoundsToWorld(false, false, false, false, false);
-        game.physics.p2.gravity.y = 0;
-        game.physics.p2.applyGravity = false;
-        game.physics.p2.enableBody(game.physics.p2.walls, false);
-        // physics start system
-        // game.physics.p2.setImpactEvents(true);
-    },
-
-    create() {
-        game.stage.backgroundColor = 0xE1A193;
-
-        console.log('src started');
-
-        // listen for main player creation
-        socket.on('create_player', createPlayer);
-        // listen to new enemy connections
-        socket.on('new_enemyPlayer', onNewPlayer);
-        // listen to enemy movement
-        socket.on('enemy_move', onEnemyMove);
-        // when received remove_player, remove the player passed;
-        socket.on('remove_player', onRemovePlayer);
-        // when the player receives the new input
-        socket.on('input_recieved', onInputRecieved);
-        // when the player gets killed
-        socket.on('killed', onKilled);
-        // when the player gains in size
-        socket.on('gained', onGained);
-        // check for item removal
-        socket.on('itemremove', data => item.onItemRemove(data));
-        // check for item update
-        socket.on('item_update', data => item.onItemUpdate(data));
-        // check for leaderboard
-        socket.on('leader_board', lbupdate);
-
-        createLeaderBoard();
-    },
-
-    update() {
-        // emit the player input
-
-        // move the player when the player is made
-        if (gameProperties.inGame) {
-            // we're making a new mouse pointer and sending this input to
-            // the server.
-            const pointer = game.input.mousePointer;
-
-            // Send a new position data to the server
-            socket.emit('input_fired', {
-                pointerX: pointer.x,
-                pointerY: pointer.y,
-                pointerWorldX: pointer.worldX,
-                pointerWorldY: pointer.worldY,
-            });
-        }
-    },
 };
 
 const gameBootstrapper = {
