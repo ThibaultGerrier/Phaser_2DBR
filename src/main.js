@@ -4,10 +4,16 @@
 /* global Phaser */
 
 // import Phaser from './lib/phaser';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
 import playerCollide from './colide';
 import { moveToPointer, distanceToPointer } from './player';
 import Item from './item';
 import { socket, login } from './login';
+
+ReactDOM.render(<App />, document.getElementById('app'));
+
 
 let player;
 let speed;
@@ -37,10 +43,10 @@ function onsocketConnected(data) {
     });
 }
 
-// When the server notifies us of client disconnection, we find the disconnected
+// When the server notifies us of src disconnection, we find the disconnected
 // enemy and remove from our game
 function onRemovePlayer(data) {
-    const removePlayer = findplayerbyid(data.id);
+    const removePlayer = findPlayerById(data.id);
     // Player not found
     if (!removePlayer) {
         console.log('Player not found: ', data.id);
@@ -125,7 +131,7 @@ function onNewPlayer(data) {
 // Server tells us there is a new enemy movement. We find the moved enemy
 // and sync the enemy movement with the server
 function onEnemyMove(data) {
-    const movePlayer = findplayerbyid(data.id);
+    const movePlayer = findPlayerById(data.id);
 
     if (!movePlayer) {
         return;
@@ -139,7 +145,7 @@ function onEnemyMove(data) {
     };
 
 
-    // check if the server enemy size is not equivalent to the client
+    // check if the server enemy size is not equivalent to the src
     if (data.size !== movePlayer.player.body_size) {
         movePlayer.player.body_size = data.size;
         const newScale = movePlayer.player.body_size / movePlayer.initial_size;
@@ -190,7 +196,7 @@ function onKilled() {
 
 // This is where we use the socket id.
 // Search through enemies list to find the right enemy of the id.
-const findplayerbyid = id => enemies.find(e => e.id === id) || false;
+const findPlayerById = id => enemies.find(e => e.id === id) || false;
 
 // create leader board in here.
 function createLeaderBoard() {
@@ -286,7 +292,7 @@ main.prototype = {
     create() {
         game.stage.backgroundColor = 0xE1A193;
 
-        console.log('client started');
+        console.log('src started');
 
         // listen for main player creation
         socket.on('create_player', createPlayer);

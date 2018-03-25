@@ -108,16 +108,16 @@ function onNewPlayer(data) {
             size: player.size,
         };
         console.log('pushing player');
-        // send message to the sender-client only
+        // send message to the sender-src only
         this.emit('new_enemyPlayer', playerInfo);
     });
 
-    // Tell the client to make foods that are existing
+    // Tell the src to make foods that are existing
     gameInstance.foodPickup.forEach((food) => {
         this.emit('item_update', food);
     });
 
-    // send message to every connected client except the sender
+    // send message to every connected src except the sender
     this.broadcast.emit('new_enemyPlayer', currentInfo);
 
     gameInstance.playerList.push(newPlayer);
@@ -131,7 +131,7 @@ function onInputFired(data) {
         return;
     }
 
-    // when sendData is true, we send the data back to client.
+    // when sendData is true, we send the data back to src.
     if (!movePlayer.sendData) {
         return;
     }
@@ -141,7 +141,7 @@ function onInputFired(data) {
     // we set sendData to false when we send the data.
     movePlayer.sendData = false;
 
-    // Make a new pointer with the new inputs from the client.
+    // Make a new pointer with the new inputs from the src.
     // contains player positions in server
     const serverPointer = {
         x: data.pointerX,
@@ -159,7 +159,7 @@ function onInputFired(data) {
 
     [movePlayer.x, movePlayer.y] = movePlayer.playerBody.position;
 
-    // new player position to be sent back to client.
+    // new player position to be sent back to src.
     const info = {
         x: movePlayer.playerBody.position[0],
         y: movePlayer.playerBody.position[1],
@@ -259,6 +259,6 @@ function onClientDisconnect() {
     }
     console.log(`removing player ${this.id}`);
     sortPlayerListByScore();
-    // send message to every connected client except the sender
+    // send message to every connected src except the sender
     this.broadcast.emit('remove_player', { id: this.id });
 }
