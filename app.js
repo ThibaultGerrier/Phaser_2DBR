@@ -75,6 +75,7 @@ function onEnterName(data) {
 }
 
 function onNewPlayer(data) {
+    console.log('on new player');
     const newPlayer = new Player(this.id, data.username, data.x, data.y, data.angle);
     newPlayer.playerBody = new p2.Body({
         mass: 0,

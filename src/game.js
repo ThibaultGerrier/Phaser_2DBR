@@ -15,7 +15,7 @@ Global.gameProperties = {
 
 const canvasWidth = window.innerWidth * window.devicePixelRatio;
 const canvasHeight = window.innerHeight * window.devicePixelRatio;
-Global.game = new Phaser.Game(canvasWidth, canvasHeight, Phaser.CANVAS, 'game-root');
+Global.game = new Phaser.Game(canvasWidth, canvasHeight, Phaser.AUTO, 'game-root');
 
 const gameBootstrapper = {
     init() {

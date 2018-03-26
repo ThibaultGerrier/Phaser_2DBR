@@ -44,6 +44,7 @@ function onEnemyMove(data) {
 
 function onInputReceived(data) {
     // we're forming a new pointer with the new position
+    // console.log(Global.game);
     const newPointer = {
         x: data.x,
         y: data.y,
@@ -142,14 +143,18 @@ function onLeaderBoardUpdate(data) {
 }
 
 function onCreatePlayer(data) {
-    Global.player = Global.game.add.graphics(0, 0);
+    console.log('onCreatePlayer');
+
+    Global.player = Global.game.add.sprite(100, 100, 'dude');
+
+    // Global.player = Global.game.add.graphics(0, 0);
     Global.player.radius = data.size;
 
     // set a fill and line style
-    Global.player.beginFill(0xffd900);
-    Global.player.lineStyle(2, 0xffd900, 1);
-    Global.player.drawCircle(0, 0, Global.player.radius * 2);
-    Global.player.endFill();
+    // Global.player.beginFill(0xffd900);
+    // Global.player.lineStyle(2, 0xffd900, 1);
+    // Global.player.drawCircle(0, 0, Global.player.radius * 2);
+    // Global.player.endFill();
     Global.player.anchor.setTo(0.5, 0.5);
     Global.player.body_size = Global.player.radius;
     // set the initial size;
@@ -170,6 +175,15 @@ function onCreatePlayer(data) {
 
     // camera follow
     Global.game.camera.follow(Global.player, Phaser.Camera.FOLLOW_LOCKON, 0.5, 0.5);
+
+    Global.player.animations.add('left', [0, 1, 2, 3], 10, true);
+    Global.player.animations.add('up', [9, 10, 11, 12], 10, true);
+    Global.player.animations.add('right', [5, 6, 7, 8], 10, true);
+    Global.player.animations.add('down', [13, 14, 15, 16], 10, true);
+    Global.player.animations.add('stop', [4], 10, false);
+
+
+    console.log(Global.player);
 }
 
 export {

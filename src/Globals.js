@@ -6,6 +6,7 @@ const Global = {
     speed: null,
     enemies: [],
     leaderText: null,
+    cursors: null,
 };
 
 export default Global;

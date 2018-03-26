@@ -5,6 +5,16 @@ function joinGame(data) {
 }
 
 export default class login {
+    preload() {
+        Global.game.load.image('2ammo', 'dist/images/2ammo.png');
+        Global.game.load.spritesheet(
+            'dude',
+            'dist/images/guy.png',
+            32,
+            48,
+        );
+    }
+
     create() {
         console.log('create login');
         // game.stage.backgroundColor = '#AFF7F0';

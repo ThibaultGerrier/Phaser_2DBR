@@ -40,9 +40,13 @@ export default class Main {
 
         // when the player enters the game
         Global.socket.on('enter_game', onSocketConnected);
+        // Global.game.load.image('2ammo', 'dist/images/2ammo.png');
     }
 
     preload() {
+        console.log('preload');
+        // Global.game.load.image('2ammo', 'dist/images/2ammo.png');
+
         Global.game.stage.disableVisibilityChange = true;
         Global.game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
         Global.game.world.setBounds(0, 0, Global.gameProperties.gameWidth, Global.gameProperties.gameHeight, false, false, false, false);
@@ -53,12 +57,13 @@ export default class Main {
         Global.game.physics.p2.enableBody(Global.game.physics.p2.walls, false);
         // physics start system
         // game.physics.p2.setImpactEvents(true);
+        console.log('preload end');
     }
 
     create() {
         Global.game.stage.backgroundColor = 0xE1A193;
 
-        console.log('src started');
+        console.log('create started');
 
         // listen for main player creation
         Global.socket.on('create_player', onCreatePlayer);
@@ -82,9 +87,14 @@ export default class Main {
         Global.socket.on('leader_board', onLeaderBoardUpdate);
 
         createLeaderBoard();
+        console.log(this);
+
+        Global.cursors = Global.game.input.keyboard.createCursorKeys();
     }
 
     update() {
+        // console.log('update');
+        // console.log(Global.player);
         // emit the player input
 
         // move the player when the player is made
@@ -100,6 +110,19 @@ export default class Main {
                 pointerWorldX: pointer.worldX,
                 pointerWorldY: pointer.worldY,
             });
+        }
+        if (Global.player) {
+            if (Global.cursors.left.isDown) {
+                Global.player.animations.play('left', true);
+            } else if (Global.cursors.up.isDown) {
+                Global.player.animations.play('up', true);
+            } else if (Global.cursors.right.isDown) {
+                Global.player.animations.play('right', true);
+            } else if (Global.cursors.down.isDown) {
+                Global.player.animations.play('down', true);
+            } else {
+                Global.player.animations.play('stop', true);
+            }
         }
     }
 }
