@@ -8,15 +8,17 @@ export default class RemotePlayer {
         this.id = id;
         this.angle = startAngle;
 
-        this.player = Global.game.add.graphics(this.x, this.y);
+        // this.player = Global.game.add.graphics(this.x, this.y);
+        this.player = Global.game.add.sprite(this.x, this.y, 'dude');
+
         // initialize the size with the server value
         this.player.radius = startSize;
 
         // set a fill and line style
-        this.player.beginFill(0xffd900);
-        this.player.lineStyle(2, 0xffd900, 1);
-        this.player.drawCircle(0, 0, this.player.radius * 2);
-        this.player.endFill();
+        // this.player.beginFill(0xffd900);
+        // this.player.lineStyle(2, 0xffd900, 1);
+        // this.player.drawCircle(0, 0, this.player.radius * 2);
+        // this.player.endFill();
         this.player.anchor.setTo(0.5, 0.5);
         // we set the initial size;
         this.initial_size = startSize;

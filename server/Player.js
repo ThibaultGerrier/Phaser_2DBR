@@ -11,6 +11,8 @@ class Player {
         this.sendData = true;
         this.size = getRandomInt(40, 100);
         this.dead = false;
+        this.health = 100;
+        this.ammo = 30;
     }
 }
 

@@ -126,7 +126,7 @@ function onNewPlayer(data) {
 }
 
 function onInputFired(data) {
-    const movePlayer = findPlayerById(this.id, this.room);
+    const movePlayer = findPlayerById(this.id);
     if (!movePlayer || movePlayer.dead) {
         console.log('no player');
         return;

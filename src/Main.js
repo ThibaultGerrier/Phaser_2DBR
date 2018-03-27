@@ -11,6 +11,7 @@ import {
     onLeaderBoardUpdate,
 } from './socketActions';
 import Item from './item';
+import { angleToPointer } from './player';
 
 const item = new Item(Global.game);
 
@@ -30,6 +31,24 @@ function createLeaderBoard() {
     Global.leaderText.anchor.set(0);
 
     leaderBox.addChild(Global.leaderText);
+}
+
+function createAmmoCount() {
+    const ammoBox = Global.game.add.graphics(0, 0);
+    ammoBox.fixedToCamera = true;
+    // draw a rectangle
+    ammoBox.beginFill(0xD3D3D3, 0.3);
+    ammoBox.lineStyle(2, 0x202226, 1);
+    ammoBox.drawRect(0, 0, 150, 50);
+
+    const style = {
+        font: '13px Press Start 2P', fill: 'black', align: 'left', fontSize: '22px',
+    };
+
+    Global.ammoCountText = Global.game.add.text(10, 10, `Ammo: ${Global.ammoCount}`, style);
+    Global.ammoCountText.anchor.set(0);
+
+    ammoBox.addChild(Global.ammoCountText);
 }
 
 export default class Main {
@@ -61,7 +80,8 @@ export default class Main {
     }
 
     create() {
-        Global.game.stage.backgroundColor = 0xE1A193;
+        // Global.game.stage.backgroundColor = 0xE1A193;
+        Global.game.add.tileSprite(0, 0, Global.gameProperties.gameWidth, Global.gameProperties.gameHeight, 'grass');
 
         console.log('create started');
 
@@ -87,9 +107,11 @@ export default class Main {
         Global.socket.on('leader_board', onLeaderBoardUpdate);
 
         createLeaderBoard();
+        createAmmoCount();
         console.log(this);
 
         Global.cursors = Global.game.input.keyboard.createCursorKeys();
+        Global.game.input.mouse.capture = true;
     }
 
     update() {
@@ -122,6 +144,12 @@ export default class Main {
                 Global.player.animations.play('down', true);
             } else {
                 Global.player.animations.play('stop', true);
+            }
+            if (Global.game.input.activePointer.leftButton.isDown && Global.ammoCount > 0) {
+                // Global.weapon.fireAngle += 10;
+                Global.weapon.fire();
+                const angle = angleToPointer(Global.player, { worldX: Global.game.input.mousePointer.worldX, worldY: Global.game.input.mousePointer.worldY });
+                Global.weapon.fireAngle = (angle * 180) / Math.PI;
             }
         }
     }

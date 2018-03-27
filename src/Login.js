@@ -6,13 +6,21 @@ function joinGame(data) {
 
 export default class login {
     preload() {
+        // images
         Global.game.load.image('2ammo', 'dist/images/2ammo.png');
+        Global.game.load.image('grass', 'dist/images/grass_4000_4000.png');
+        Global.game.load.image('gun', 'dist/images/gun.png');
+        Global.game.load.image('bullet', 'dist/images/bullet.png');
         Global.game.load.spritesheet(
             'dude',
             'dist/images/guy.png',
             32,
             48,
         );
+
+        // audio
+        Global.game.load.audio('reload', ['dist/sound/reload.mp3', 'dist/sound/reload.ogg']);
+        Global.game.load.audio('ak74', ['dist/sound/ak74.mp3', 'dist/sound/ak74.ogg']);
     }
 
     create() {

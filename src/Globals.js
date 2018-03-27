@@ -7,6 +7,7 @@ const Global = {
     enemies: [],
     leaderText: null,
     cursors: null,
+    ammoCount: 30,
 };
 
 export default Global;

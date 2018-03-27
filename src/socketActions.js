@@ -57,11 +57,15 @@ function onInputReceived(data) {
     // between the current position and the new position so that player
     // does jerk.
     Global.speed = distance / 0.05;
+    // console.log(Global.speed);
 
     Global.player.rotation = moveToPointer(Global.player, Global.speed, newPointer);
 }
 
 function onGained(data) {
+    const music = Global.game.add.audio('reload');
+    music.play();
+
     Global.player.body_size = data.new_size;
     const newScale = data.new_size / Global.player.initial_size;
     Global.player.scale.set(newScale);
@@ -69,6 +73,9 @@ function onGained(data) {
     Global.player.body.clearShapes();
     Global.player.body.addCircle(Global.player.body_size, 0, 0);
     Global.player.body.data.shapes[0].sensor = true;
+
+    Global.ammoCount = data.new_size;
+    Global.ammoCountText.setText(`Ammo: ${Global.ammoCount}`);
 }
 
 function onKilled() {
@@ -147,6 +154,28 @@ function onCreatePlayer(data) {
 
     Global.player = Global.game.add.sprite(100, 100, 'dude');
 
+    Global.player.gun = Global.game.add.sprite(100, 100, 'gun');
+    // Global.player.gun.trackSprite(Global.player);
+    Global.player.gun.scale.setTo(0.1);
+
+    Global.weapon = Global.game.add.weapon(30, 'bullet');
+    Global.weapon.bullets.setAll('scale.x', 0.2);
+    Global.weapon.bullets.setAll('scale.y', 0.2);
+    Global.weapon.bulletAngleOffset = 45;
+
+
+    Global.weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+    Global.weapon.bulletSpeed = 800;
+    Global.weapon.fireRate = 60;
+    Global.weapon.bulletAngleVariance = 5;
+    Global.weapon.trackSprite(Global.player);
+
+    const onFire = () => {
+        Global.ammoCount -= 1;
+        Global.ammoCountText.setText(`Ammo: ${Global.ammoCount}`);
+    };
+    Global.weapon.onFire.add(onFire);
+
     // Global.player = Global.game.add.graphics(0, 0);
     Global.player.radius = data.size;
 
@@ -181,7 +210,6 @@ function onCreatePlayer(data) {
     Global.player.animations.add('right', [5, 6, 7, 8], 10, true);
     Global.player.animations.add('down', [13, 14, 15, 16], 10, true);
     Global.player.animations.add('stop', [4], 10, false);
-
 
     console.log(Global.player);
 }
